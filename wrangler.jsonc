@@ -9,7 +9,16 @@
 	"compatibility_date": "2025-12-31",
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "studyspark-db",
+			"database_id": "5b464ddd-243c-4c48-8285-a2673879e081",
+			"remote": true,
+			"migrations_dir": "drizzle"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
