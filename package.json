@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@clerk/backend": "^2.29.0",
 		"@hono/clerk-auth": "^3.0.3",
+		"@hono/zod-validator": "^0.7.6",
 		"drizzle-orm": "^0.45.1",
 		"hono": "^4.11.3",
 		"svix": "^1.84.1"
