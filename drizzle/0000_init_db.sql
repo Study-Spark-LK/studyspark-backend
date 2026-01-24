@@ -12,7 +12,7 @@ CREATE TABLE `learning_profiles` (
 	`deleted_at` integer,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON UPDATE no action ON DELETE no action
 );
---> statement-breakpoint
+
 CREATE TABLE `users` (
 	`user_id` text PRIMARY KEY NOT NULL,
 	`email` text NOT NULL,
