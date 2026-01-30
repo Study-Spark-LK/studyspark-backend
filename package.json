@@ -22,6 +22,7 @@
 		"@hono/swagger-ui": "^0.5.3",
 		"@hono/zod-openapi": "^1.2.0",
 		"@hono/zod-validator": "^0.7.6",
+		"@poppanator/http-constants": "^3.0.0",
 		"drizzle-orm": "^0.45.1",
 		"hono": "^4.11.3",
 		"svix": "^1.84.1"
