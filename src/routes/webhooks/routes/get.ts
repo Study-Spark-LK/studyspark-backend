@@ -1,10 +1,5 @@
-import { Hono} from 'hono';
+import { createHonoApp } from "@/lib/create-app";
 
-const app = new Hono();
+const app = createHonoApp();
 
-app.get('/', (c) => c.text('webhook is Running'));
-
-export default app;
-
-
-
+app.get('/', (c) => c.text('webhook is running'));
