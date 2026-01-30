@@ -16,8 +16,15 @@ app.use('*', clerkMiddleware());
 // routes
 app.route('/api/users', userApp);
 app.route('/api/webhooks', webhookApp);
-app.route('/dev', devApp);
 
-app.get('/', (c) => c.text('StudySpark API is Running'));
+app.doc('/doc', {
+	openapi: '3.0.0',
+	info: {
+		version: '1.0.0',
+		title: 'StudySpark API',
+	},
+});
+
+app.route('/dev', devApp);
 
 export default app;
