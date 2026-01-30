@@ -4,16 +4,14 @@ export type Bindings = {
 	CLERK_PUBLISHABLE_KEY: string;
 	CLERK_WEBHOOK_SECRET: string;
 	// other keys
-	IS_DEV: string;
+	ENVIRONMENT: string;
 };
 
 export type Variables = {
 	userId?: string;
-
 };
 
 export type AppEnv = {
 	Bindings: Bindings;
 	Variables: Variables;
-
 };
