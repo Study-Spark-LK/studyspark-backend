@@ -1,11 +1,10 @@
-import { Hono, Context } from 'hono';
-import { WebhookValidator } from '../util';
+import { WebhookValidator } from '@/util';
 import { drizzle } from 'drizzle-orm/d1';
 import { users } from '../../../db/schema';
 import * as schema from '../../../db/schema';
-import { AppEnv } from '../../../types';
+import { createHonoApp } from '@/lib/create-app';
 
-const app = new Hono<AppEnv>();
+const app = createHonoApp();
 
 app.post('/', async (c) => {
 	console.log('try....');

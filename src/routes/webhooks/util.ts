@@ -3,7 +3,7 @@ import { Webhook } from 'svix';
 type WebhookProvider = 'clerk';
 
 export class WebhookValidator {
-	static async validate(c: any, provider: WebhookProvider, secret: string): Promise<any> {
+	static async validate(c: any, provider:  WebhookProvider, secret: string): Promise<any> {
 		const payload = await c.req.text();
 		const headers = c.req.header();
 
