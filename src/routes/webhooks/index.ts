@@ -1,7 +1,8 @@
-import { Hono } from 'hono';
-import clerkWebhookRoute from './routes/clerk';
-import getclerkWebhookRoute from './routes/get';
+import { createHonoApp } from '@/lib/create-app';
+import clerkRoute from './routes/clerk';
 
-const webhookApp = new Hono().route('/clerk', clerkWebhookRoute).route('/get', getclerkWebhookRoute);
+const app = createHonoApp();
 
-export default webhookApp;
+app.route('/clerk', clerkRoute);
+
+export default app;
