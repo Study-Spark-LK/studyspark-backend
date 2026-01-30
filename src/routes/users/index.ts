@@ -1,8 +1,10 @@
-import { Hono } from 'hono';
-import createRoute from './routes/create';
+import { createHonoApp } from '@/lib/create-app';
+import createRoute from '@/routes/users/routes/create';
+import updateRoute from '@/routes/users/routes/update';
 
-const userApp = new Hono().route('/', createRoute);
+const app = createHonoApp();
 
-export default userApp;
+app.route('/', createRoute);
+app.route('/update', updateRoute);
 
-
+export default app;
