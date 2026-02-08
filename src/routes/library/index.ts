@@ -5,5 +5,6 @@ import listRoute from '@/routes/library/routes/list';
 const app = createHonoApp();
 
 app.route('/', listRoute);
+app.route('/', createRoute);
 
 export default app;
