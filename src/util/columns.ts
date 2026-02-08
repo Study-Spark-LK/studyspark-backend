@@ -1,10 +1,10 @@
-import { integer } from 'drizzle-orm/sqlite-core';
+import { text } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const timestamps = {
-	updatedAt: integer('updated_at', { mode: 'timestamp' }),
-	createdAt: integer('created_at', { mode: 'timestamp' })
-		.default(sql`(unixepoch())`)
+	updatedAt: text('updated_at'),
+	createdAt: text('created_at')
+		.default(sql`(CURRENT_TIMESTAMP)`)
 		.notNull(),
-	deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+	deletedAt: text('deleted_at'),
 };
