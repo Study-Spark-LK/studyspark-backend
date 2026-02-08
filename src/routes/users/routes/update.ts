@@ -1,5 +1,5 @@
 import { createRoute, z } from '@hono/zod-openapi';
-import { updateProfileSchema } from '../../../validators/schemas';
+import { updateProfileSchema } from '@/routes/users/schema';
 import { status } from '@poppanator/http-constants';
 import { error400, error401, error500 } from '../../../openapi/common';
 import { createHonoApp } from '@/lib/create-app';
