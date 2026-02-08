@@ -20,8 +20,27 @@ export const learningProfiles = table('learning_profiles', {
 	auditoryScore: t.integer('auditory_score').default(0),
 	readingScore: t.integer('reading_score').default(0),
 	kinestheticScore: t.integer('kinesthetic_score').default(0),
-	
+
 	learningStyle: t.text('learning_style'),
 	hobbies: t.text('hobbies'),
+	...timestamps,
+});
+
+export const studyMaterials = table('study_materials', {
+	id: t.text('material_id').primaryKey(),
+	userId: t
+		.text('user_id')
+		.notNull()
+		.references(() => users.id),
+
+	title: t.text('title').notNull(),
+	description: t.text('description'),
+	fileUrl: t.text('file_url').notNull(),
+	fileType: t.text('file_type').notNull(),
+
+	subject: t.text('subject').default('General'),
+	summary: t.text('summary'),
+
+	isFavorite: t.integer('is_favorite', { mode: 'boolean' }).default(false),
 	...timestamps,
 });

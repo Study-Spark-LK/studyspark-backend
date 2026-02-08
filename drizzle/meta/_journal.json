@@ -8,6 +8,20 @@
       "when": 1767366915717,
       "tag": "0000_init_db",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770540039950,
+      "tag": "0001_add_study_materials",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770573556898,
+      "tag": "0002_change_dates_to_text",
+      "breakpoints": true
     }
   ]
 }
