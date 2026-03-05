@@ -22,9 +22,14 @@
 		"@hono/swagger-ui": "^0.5.3",
 		"@hono/zod-openapi": "^1.2.0",
 		"@hono/zod-validator": "^0.7.6",
+		"@loglayer/transport-pino": "^3.0.2",
 		"@poppanator/http-constants": "^3.0.0",
 		"drizzle-orm": "^0.45.1",
 		"hono": "^4.11.3",
-		"svix": "^1.84.1"
+		"loglayer": "^9.1.0",
+		"pino": "^10.3.1",
+		"serialize-error": "^13.0.1",
+		"svix": "^1.84.1",
+		"zod": "^4.3.6"
 	}
 }

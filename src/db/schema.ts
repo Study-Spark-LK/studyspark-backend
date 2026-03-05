@@ -1,20 +1,21 @@
 import { sqliteTable as table } from 'drizzle-orm/sqlite-core';
 import * as t from 'drizzle-orm/sqlite-core';
-import { timestamps } from '../util/columns';
+import { createdAtUpdatedAt } from '@/db/util';
 
-export const users = table('users', {
+export const userTable = table('users', {
 	id: t.text('user_id').primaryKey(),
 	email: t.text('email').notNull(),
 	fullName: t.text('full_name'),
-	...timestamps,
+	...createdAtUpdatedAt
 });
+export type DBUser = typeof userTable.$inferSelect;
 
-export const learningProfiles = table('learning_profiles', {
+export const profileTable = table('profiles', {
 	id: t.integer('profile_id').primaryKey({ autoIncrement: true }),
 	userId: t
 		.text('user_id')
 		.notNull()
-		.references(() => users.id),
+		.references(() => userTable.id),
 
 	visualScore: t.integer('visual_score').default(0),
 	auditoryScore: t.integer('auditory_score').default(0),
@@ -23,15 +24,17 @@ export const learningProfiles = table('learning_profiles', {
 
 	learningStyle: t.text('learning_style'),
 	hobbies: t.text('hobbies'),
-	...timestamps,
+	...createdAtUpdatedAt
 });
+export type DBProfiles = typeof profileTable.$inferSelect;
 
-export const studyMaterials = table('study_materials', {
+
+export const docTable = table('documents', {
 	id: t.text('material_id').primaryKey(),
 	userId: t
 		.text('user_id')
 		.notNull()
-		.references(() => users.id),
+		.references(() => userTable.id),
 
 	title: t.text('title').notNull(),
 	description: t.text('description'),
@@ -42,5 +45,6 @@ export const studyMaterials = table('study_materials', {
 	summary: t.text('summary'),
 
 	isFavorite: t.integer('is_favorite', { mode: 'boolean' }).default(false),
-	...timestamps,
+	...createdAtUpdatedAt
 });
+export type DBDocs = typeof docTable.$inferSelect;
