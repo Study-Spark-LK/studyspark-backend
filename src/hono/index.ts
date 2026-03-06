@@ -1,1 +1,1 @@
-export * from './util';
+export { getHonoInstance } from '@/hono/get-hono-instance';
