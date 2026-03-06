@@ -1,2 +1,2 @@
-export { WebhookValidator } from '@/util/webhook-validator';
+export { ValidateSvixWebhook } from '@/util/validate-svix-webhook';
 export { timestamps } from '@/util/columns';

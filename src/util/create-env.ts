@@ -33,7 +33,7 @@ export async function createEnv(env: Env): Promise<AppEnv> {
 	});
 
 	// DB
-	const drizzleDB = getDB(env.HYPERDRIVE_COCKROACH_DB.connectionString);
+	const drizzleDB = getDB(env.DB);
 
 
 	// ---------------------- Setting up Context ----------------------

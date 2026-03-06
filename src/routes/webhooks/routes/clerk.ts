@@ -1,4 +1,4 @@
-import { WebhookValidator } from '@/util';
+import { ValidateSvixWebhook } from '@/util';
 import { drizzle } from 'drizzle-orm/d1';
 import { users } from '../../../db/schema';
 import * as schema from '../../../db/schema';
@@ -15,7 +15,7 @@ app.post('/', async (c) => {
 
 	console.log('Available Env Keys:', Object.keys(c.env));
 	try {
-		const event = await WebhookValidator.validate(c, 'clerk', c.env.CLERK_WEBHOOK_SECRET);
+		const event = await ValidateSvixWebhook.validate(c, 'clerk', c.env.CLERK_WEBHOOK_SECRET);
 
 		console.log('event', event.type);
 		if (event.type === 'user.created') {
@@ -31,7 +31,7 @@ app.post('/', async (c) => {
 			await db.insert(users).values({
 				id: id,
 				email: email,
-				fullName: fullName || '',
+				fullName: fullName || ''
 			});
 			console.log('User inserted successfully');
 		}
