@@ -1,4 +1,4 @@
-import { userTable, profileTable, docTable } from '@/db/schema';
+import { userTable, profileTable, docTable, fileTable } from '@/db/schema';
 
 export {
 	type DBUser,
@@ -9,7 +9,8 @@ export {
 export const dbTables = {
 	userTable,
 	profileTable,
-	docTable
+	docTable,
+	fileTable
 };
 
 export { getDB, type DBInstanceType } from '@/db/get-db';

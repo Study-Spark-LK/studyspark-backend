@@ -5,8 +5,6 @@ import { relations } from 'drizzle-orm';
 
 export const userTable = table('users', {
 	clerkId: t.text('user_id').primaryKey(),
-	email: t.text('email').notNull(),
-	fullName: t.text('full_name'),
 	...createdAtUpdatedAt()
 });
 export type DBUser = typeof userTable.$inferSelect;
