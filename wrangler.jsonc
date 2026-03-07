@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "studyspark-backend",
-	"main": "src/index.ts",
+	"main": "src/main.ts",
 	"compatibility_date": "2025-12-31",
 	"observability": {
 		"enabled": true
@@ -26,6 +26,19 @@
 		{
 			"binding": "R2_FILES",
 			"bucket_name": "assets-bucket"
+		}
+	],
+	"workflows": [
+		// ----------- CLERK EVENT WORKFLOWS -----------
+		{
+			"name": "clerk-user-created-workflow",
+			"binding": "WORKFLOWS_CLERK_USER_CREATED",
+			"class_name": "ClerkUserCreatedWorkflow"
+		},
+		{
+			"name": "clerk-user-deleted-workflow",
+			"binding": "WORKFLOWS_CLERK_USER_DELETED",
+			"class_name": "ClerkUserDeletedWorkflow"
 		}
 	]
 }

@@ -7,8 +7,8 @@ import { setupDevOnlyRoute } from '@/routes/dev-only';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 
 // export { AIPayrollWorkflow } from '@/workflows/ai/ai-payroll-workflow';
-// export { ClerkUserCreatedWorkflow } from '@/workflows/clerk/user-created';
-// export { ClerkUserDeletedWorkflow } from '@/workflows/clerk/user-deleted';
+export { ClerkUserCreatedWorkflow } from '@/workflows/clerk/user-created';
+export { ClerkUserDeletedWorkflow } from '@/workflows/clerk/user-deleted';
 
 const app = getHonoInstance();
 
