@@ -40,5 +40,13 @@
 			"binding": "WORKFLOWS_CLERK_USER_DELETED",
 			"class_name": "ClerkUserDeletedWorkflow"
 		}
-	]
+	],
+	"queues": {
+		"producers": [
+			{
+				"queue": "upstream-ingest",
+				"binding": "QUEUE_UPSTREAM_INGEST"
+			}
+		]
+	}
 }

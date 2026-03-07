@@ -1,6 +1,6 @@
 import { getHonoInstance } from '@/hono';
 import { createRoute } from '@hono/zod-openapi';
-import { OpenAPITags } from '@/constants';
+import { OpenAPITags, QueuePayloadType } from '@/constants';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 import { z } from 'zod';
 import {
@@ -58,7 +58,7 @@ export function setupCreateProfileRoute() {
 	});
 
 	app.openapi(spec, async (c) => {
-		const { log, drizzleDB, dbTables } = c.env;
+		const { log, drizzleDB, dbTables, QUEUE_UPSTREAM_INGEST } = c.env;
 
 		try {
 			const profileId = crypto.randomUUID();
@@ -75,6 +75,15 @@ export function setupCreateProfileRoute() {
 					qna: qna
 				})
 				.returning();
+
+			await QUEUE_UPSTREAM_INGEST.send({
+				type: QueuePayloadType.PROFILE_ANALYSIS,
+				payload: {
+					id: profileId,
+					name: name,
+					qna: qna
+				}
+			});
 
 			return c.json(
 				{
