@@ -10,11 +10,16 @@ export const userTable = table('users', {
 export type DBUser = typeof userTable.$inferSelect;
 
 export const profileTable = table('profiles', {
-	id: t.integer('profile_id').primaryKey({ autoIncrement: true }),
+	id: t.text('profile_id').primaryKey(),
 	clerkId: t
 		.text('user_id')
 		.notNull()
 		.references(() => userTable.clerkId),
+	name: t.text('name').notNull(),
+	qna: t.text('qna').$type<{
+		question: string,
+		answer: string,
+	}[]>().notNull(),
 	status: t.text({
 		enum: ['PENDING', 'READY']
 	}).default('PENDING'),
