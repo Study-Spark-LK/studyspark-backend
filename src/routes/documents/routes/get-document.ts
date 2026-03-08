@@ -11,9 +11,6 @@ import {
 } from '@/openapi';
 import { status } from '@poppanator/http-constants';
 import { and, desc, eq } from 'drizzle-orm';
-import { docTable } from '@/db/schema';
-
-const ITEMS_PER_PAGE = 10;
 
 export function setupGetDocumentRoute() {
 	const app = getHonoInstance();

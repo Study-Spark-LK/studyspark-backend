@@ -14,7 +14,10 @@ export const profileTable = table('profiles', {
 	clerkId: t
 		.text('user_id')
 		.notNull()
-		.references(() => userTable.clerkId),
+		.references(() => userTable.clerkId, {
+			onUpdate: 'cascade',
+			onDelete: 'cascade'
+		}),
 	name: t.text('name').notNull(),
 	qna: t.text('qna').$type<{
 		question: string,
@@ -36,11 +39,17 @@ export const docTable = table('documents', {
 	clerkId: t
 		.text('user_id')
 		.notNull()
-		.references(() => userTable.clerkId),
+		.references(() => userTable.clerkId, {
+			onUpdate: 'cascade',
+			onDelete: 'cascade'
+		}),
 	profileId: t
 		.text('profile_id')
 		.notNull()
-		.references(() => profileTable.id),
+		.references(() => profileTable.id, {
+			onUpdate: 'cascade',
+			onDelete: 'cascade'
+		}),
 	status: t.text({
 		enum: ['PENDING', 'READY']
 	}).default('PENDING'),
