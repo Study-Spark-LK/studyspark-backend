@@ -25,18 +25,19 @@ export function setupDevOnlyRoute(
 	});
 
 	app.doc('/dev/openapi', {
-		openapi: '3.0.0',
-		info: {
-			title: 'StudySpark Internal API',
-			version: '1.0.0'
-		},
-		servers: [
-			{
-				url: 'http://localhost:8787',
-				description: 'Local Server (Wrangler)'
-			}
-		]
-	});
+        openapi: '3.0.0',
+        info: {
+            title: 'StudySpark Internal API',
+            version: '1.0.0'
+        },
+        security: [{ Bearer: [] }],
+        servers: [
+            {
+                url: 'http://localhost:8787',
+                description: 'Local Server (Wrangler)'
+            }
+        ]
+    });
 
 	app.get(
 		'/dev/docs',
@@ -94,4 +95,10 @@ export function setupDevOnlyRoute(
               `
 		})
 	);
+	app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter your Clerk JWT token here'
+    });
 }
