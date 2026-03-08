@@ -24,7 +24,7 @@ export function setupGetProfilesRoute() {
 		request: {
 			query: z
 				.object({
-					status: z.enum(['all', 'pending', 'ready']).default('all')
+					status: z.enum(['all', 'pending', 'ready']).default('all').optional()
 				})
 				.openapi({
 					param: {
