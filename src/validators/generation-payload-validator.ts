@@ -12,7 +12,8 @@ const _varsSchema = z.object({
 			'AI_GENERATED_ANALYTICAL',
 			'AI_GENERATED_STORY'
 		]),
-		fileKey: z.string()
+		fileKey: z.string(),
+		mimeType: z.string()
 	}))
 });
 

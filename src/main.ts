@@ -6,8 +6,9 @@ import { setupRoutes } from '@/routes';
 import { setupDevOnlyRoute } from '@/routes/dev-only';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 import { QueuePayloadType } from '@/constants';
-import { profileAnalysisPayloadValidatorSchema } from '@/validators';
+import { generationPayloadValidatorSchema, profileAnalysisPayloadValidatorSchema } from '@/validators';
 import { onProfileAnalysisReady } from '@/consumers/on-profile-analysis-ready';
+import { onDocumentGenerationReady } from '@/consumers/on-document-generation-ready';
 
 // export { AIPayrollWorkflow } from '@/workflows/ai/ai-payroll-workflow';
 export { ClerkUserCreatedWorkflow } from '@/workflows/clerk/user-created';
@@ -107,7 +108,23 @@ export default {
 					}).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION_READY) {
-				//Document Generation Ready
+				const parsed = generationPayloadValidatorSchema.safeParse(body);
+				if (parsed.success) {
+					try {
+						await onDocumentGenerationReady(env, parsed.data);
+						message.ack();
+					} catch (error: any) {
+						log.withMetadata({
+							id: message.id,
+							attempts: message.attempts
+						}).error(error);
+					}
+				} else {
+					log.withMetadata({
+						id: message.id,
+						attempts: message.attempts
+					}).error('invalid body');
+				}
 			} else {
 				log.withMetadata({
 					id: message.id,
