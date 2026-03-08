@@ -57,7 +57,7 @@ export function setupGetDocumentsRoute() {
 									id: z.string(),
 									profileId: z.string(),
 									status: z.enum(['PENDING', 'READY']),
-									// ---
+									// --- Info
 									title: z.string(),
 									description: z.string(),
 									category: z.string(),
@@ -99,7 +99,7 @@ export function setupGetDocumentsRoute() {
 					id: r.id,
 					profileId: r.profileId,
 					status: r.status,
-					// ----
+					// ---- Info
 					title: r.description,
 					description: r.description,
 					category: r.category,

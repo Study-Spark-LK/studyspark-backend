@@ -44,15 +44,6 @@ export function setupCreateDocumentRoute() {
 								id: z.string(),
 								profileId: z.string(),
 								status: z.literal('PENDING')
-								// title: z.string(),
-								// description: z.string(),
-								// category: z.string(),
-								// progressPercentage: z.number(),
-								// originalFileId: z.string(),
-								// generatedFiles: z.array(z.object({
-								// 	fileId: z.string(),
-								// 	type: z.enum(['visual', 'audio', 'analytical', 'story'])
-								// }))
 							})
 						)
 					}
