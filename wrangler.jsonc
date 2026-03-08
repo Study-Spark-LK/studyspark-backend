@@ -47,6 +47,11 @@
 				"queue": "upstream-ingest",
 				"binding": "QUEUE_UPSTREAM_INGEST"
 			}
+		],
+		"consumers": [
+			{
+				"queue": "upstream-output"
+			}
 		]
 	}
 }
