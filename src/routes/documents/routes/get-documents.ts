@@ -11,47 +11,57 @@ import {
 } from '@/openapi';
 import { status } from '@poppanator/http-constants';
 import { and, desc, eq } from 'drizzle-orm';
+import { docTable } from '@/db/schema';
 
-export function setupGetProfilesRoute() {
+const ITEMS_PER_PAGE = 10;
+
+export function setupGetDocumentsRoute() {
 	const app = getHonoInstance();
 
 	const spec = createRoute({
 		method: 'get',
-		path: '/profiles',
-		tags: [OpenAPITags.PROFILES],
-		operationId: 'getProfiles',
+		path: '/documents',
+		tags: [OpenAPITags.DOCUMENTS],
+		operationId: 'getDocuments',
 		middleware: [clerkValidate, clerkEnforced],
 		request: {
 			query: z
 				.object({
-					status: z.enum(['all', 'pending', 'ready']).default('all').optional()
+					category: z.string().optional(),
+					page: z.coerce.number().optional()
 				})
 				.openapi({
 					param: {
-						name: 'status',
+						name: 'category',
+						in: 'query',
+						required: false
+					}
+				})
+				.openapi({
+					param: {
+						name: 'page',
 						in: 'query',
 						required: false
 					},
-					example: 'all'
+					example: '2'
 				})
 		},
 		responses: {
 			[status.Ok]: {
-				description: 'all profiles',
+				description: 'documents',
 				content: {
 					'application/json': {
 						schema: response2xxSchemaWrapper(
 							z.array(
 								z.object({
 									id: z.string(),
-									name: z.string(),
+									profileId: z.string(),
 									status: z.enum(['PENDING', 'READY']),
-									visualScore: z.number(),
-									auditoryScore: z.number(),
-									readingScore: z.number(),
-									kinestheticScore: z.number(),
-									createdAt: z.number(),
-									updatedAt: z.number()
+									// ---
+									title: z.string(),
+									description: z.string(),
+									category: z.string(),
+									progressPercentage: z.number()
 								})
 							)
 						)
@@ -65,34 +75,35 @@ export function setupGetProfilesRoute() {
 	});
 
 	app.openapi(spec, async (c) => {
-		const { log, drizzleDB, dbTables, R2_FILES } = c.env;
-		const { profileTable } = dbTables;
+		const { log, drizzleDB, dbTables } = c.env;
 
 		try {
-			const { status } = c.req.valid('query');
 			const clerkId = c.get('clerkUserId');
+			const { page: _page, category } = c.req.valid('query');
+			const { docTable } = dbTables;
 
-			const dbRes = await drizzleDB.query.profileTable.findMany({
+			let page = _page || 1;
+
+			const dbRes = await drizzleDB.query.docTable.findMany({
 				where: and(
-					eq(profileTable.clerkId, clerkId),
-					status === 'ready' ?
-						eq(profileTable.status, 'READY') : status === 'pending' ?
-							eq(profileTable.status, 'PENDING') : undefined
+					eq(docTable.clerkId, clerkId),
+					category ? eq(docTable.category, category) : undefined
 				),
-				orderBy: desc(profileTable.createdAt)
+				orderBy: desc(docTable.createdAt),
+				limit: ITEMS_PER_PAGE,
+				offset: (page - 1) * ITEMS_PER_PAGE
 			});
 
 			return c.json({
 				data: dbRes.map((r) => ({
 					id: r.id,
-					name: r.name,
+					profileId: r.profileId,
 					status: r.status,
-					visualScore: r.visualScore,
-					auditoryScore: r.auditoryScore,
-					readingScore: r.readingScore,
-					kinestheticScore: r.kinestheticScore,
-					createdAt: r.createdAt,
-					updatedAt: r.updatedAt
+					// ----
+					title: r.description,
+					description: r.description,
+					category: r.category,
+					progressPercentage: r.progressPercentage
 				}))
 			});
 		} catch (e: any) {
