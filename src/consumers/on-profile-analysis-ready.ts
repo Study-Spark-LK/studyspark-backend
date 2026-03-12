@@ -9,7 +9,8 @@ export async function onProfileAnalysisReady(env: AppEnv, payload: ValidatedProf
 		auditoryScore: payload.auditoryScore,
 		visualScore: payload.visualScore,
 		readingScore: payload.readingScore,
-		kinestheticScore: payload.kinestheticScore
+		kinestheticScore: payload.kinestheticScore,
+		status: 'READY'
 	})
 		.where(eq(profileTable.id, payload.id))
 		.returning();

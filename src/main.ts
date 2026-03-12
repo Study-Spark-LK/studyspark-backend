@@ -6,9 +6,16 @@ import { setupRoutes } from '@/routes';
 import { setupDevOnlyRoute } from '@/routes/dev-only';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 import { QueuePayloadType } from '@/constants';
-import { generationPayloadValidatorSchema, profileAnalysisPayloadValidatorSchema } from '@/validators';
+import {
+	generationPayloadValidatorSchema,
+	profileAnalysisPayloadValidatorSchema,
+	profileAnalysisIngestValidatorSchema,
+	documentGenerationIngestValidatorSchema
+} from '@/validators';
 import { onProfileAnalysisReady } from '@/consumers/on-profile-analysis-ready';
 import { onDocumentGenerationReady } from '@/consumers/on-document-generation-ready';
+import { onProfileAnalysis } from '@/consumers/on-profile-analysis';
+import { onDocumentGeneration } from '@/consumers/on-document-generation';
 
 // export { AIPayrollWorkflow } from '@/workflows/ai/ai-payroll-workflow';
 export { ClerkUserCreatedWorkflow } from '@/workflows/clerk/user-created';
@@ -50,6 +57,18 @@ app.get('/health', async (c) => {
 	return c.json({
 		status: 'ok'
 	});
+});
+
+// Agent connectivity check
+app.get('/health/agent', async (c) => {
+	const { AGENT_URL } = c.env;
+	try {
+		const res = await fetch(`${AGENT_URL}/health`, { method: 'GET' });
+		const body = await res.text();
+		return c.json({ status: res.ok ? 'ok' : 'error', agentUrl: AGENT_URL, httpStatus: res.status, body });
+	} catch (err: any) {
+		return c.json({ status: 'unreachable', agentUrl: AGENT_URL, error: err?.message }, 502);
+	}
 });
 
 //#endregion --------------------- End App Setup ------------------------
@@ -112,6 +131,42 @@ export default {
 				if (parsed.success) {
 					try {
 						await onDocumentGenerationReady(env, parsed.data);
+						message.ack();
+					} catch (error: any) {
+						log.withMetadata({
+							id: message.id,
+							attempts: message.attempts
+						}).error(error);
+					}
+				} else {
+					log.withMetadata({
+						id: message.id,
+						attempts: message.attempts
+					}).error('invalid body');
+				}
+			} else if (body['type'] && body['type'] === QueuePayloadType.PROFILE_ANALYSIS) {
+				const parsed = profileAnalysisIngestValidatorSchema.safeParse(body);
+				if (parsed.success) {
+					try {
+						await onProfileAnalysis(env, parsed.data);
+						message.ack();
+					} catch (error: any) {
+						log.withMetadata({
+							id: message.id,
+							attempts: message.attempts
+						}).error(error);
+					}
+				} else {
+					log.withMetadata({
+						id: message.id,
+						attempts: message.attempts
+					}).error('invalid body');
+				}
+			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION) {
+				const parsed = documentGenerationIngestValidatorSchema.safeParse(body);
+				if (parsed.success) {
+					try {
+						await onDocumentGeneration(env, parsed.data);
 						message.ack();
 					} catch (error: any) {
 						log.withMetadata({

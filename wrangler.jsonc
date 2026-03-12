@@ -1,6 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "studyspark-backend",
+	"account_id": "146e88f00fba871135208de23bf604ef",
 	"main": "src/main.ts",
 	"compatibility_date": "2025-12-31",
 	"observability": {
@@ -20,7 +21,9 @@
 	],
 	"keep_vars": true,
 	"vars": {
-		"MAXIMUM_PROFILES_PER_USER": 10
+		"MAXIMUM_PROFILES_PER_USER": 10,
+		"AGENT_URL": "http://localhost:8080",
+		"INTERNAL_API_KEY": "dev-secret-change-in-prod"
 	},
 	"r2_buckets": [
 		{
@@ -46,11 +49,18 @@
 			{
 				"queue": "upstream-ingest",
 				"binding": "QUEUE_UPSTREAM_INGEST"
+			},
+			{
+				"queue": "upstream-output",
+				"binding": "QUEUE_UPSTREAM_OUTPUT"
 			}
 		],
 		"consumers": [
 			{
 				"queue": "upstream-output"
+			},
+			{
+				"queue": "upstream-ingest"
 			}
 		]
 	}
