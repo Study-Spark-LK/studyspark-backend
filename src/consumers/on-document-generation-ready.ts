@@ -13,38 +13,24 @@ export async function onDocumentGenerationReady(env: AppEnv, payload: ValidatedG
 		throw new Error('document not found');
 	}
 
-	const visualFile = payload.generatedFiles
-		.find(x => x.type === 'AI_GENERATED_VISUAL');
-	const audioFile = payload.generatedFiles
-		.find(x => x.type === 'AI_GENERATED_AUDIO');
 	const analyticalFile = payload.generatedFiles
 		.find(x => x.type === 'AI_GENERATED_ANALYTICAL');
 	const storyFile = payload.generatedFiles
 		.find(x => x.type === 'AI_GENERATED_STORY');
 
-	if (!visualFile || !audioFile || !storyFile || !analyticalFile) {
-		throw new Error('all files not found, at least one is missing');
+	if (!analyticalFile || !storyFile) {
+		throw new Error('analytical or story file missing from payload');
 	}
 
-	const insertRes = await drizzleDB.batch([
-		drizzleDB
-			.insert(dbTables.fileTable)
-			.values({
-				id: visualFile.fileKey,
-				clerkId: doc.clerkId,
-				docId: doc.id,
-				type: 'AI_GENERATED_VISUAL',
-				mimeType: visualFile.mimeType
-			}),
-		drizzleDB
-			.insert(dbTables.fileTable)
-			.values({
-				id: audioFile.fileKey,
-				clerkId: doc.clerkId,
-				docId: doc.id,
-				type: 'AI_GENERATED_AUDIO',
-				mimeType: audioFile.mimeType
-			}),
+	// Update document with AI-generated metadata and mark as READY
+	await drizzleDB.update(docTable).set({
+		title: payload.title,
+		description: payload.description,
+		category: payload.category,
+		status: 'READY'
+	}).where(eq(docTable.id, payload.id));
+
+	await drizzleDB.batch([
 		drizzleDB
 			.insert(dbTables.fileTable)
 			.values({

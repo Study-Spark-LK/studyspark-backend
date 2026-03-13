@@ -12,7 +12,9 @@ const _varsSchema = z.object({
     CLERK_WEBHOOK_SIGNING_KEY: z.string().nonempty(),
     // -----> Drizzle ORM ENVs
     // -----> Other
-    MAXIMUM_PROFILES_PER_USER: z.coerce.number()
+    MAXIMUM_PROFILES_PER_USER: z.coerce.number(),
+    AGENT_URL: z.string().url(),
+    INTERNAL_API_KEY: z.string().nonempty()
 
 });
 

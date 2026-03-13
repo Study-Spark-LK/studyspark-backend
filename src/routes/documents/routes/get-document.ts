@@ -54,7 +54,7 @@ export function setupGetDocumentRoute() {
 								originalFileId: z.string(),
 								generatedFiles: z.array(z.object({
 									fileId: z.string(),
-									type: z.enum(['visual', 'audio', 'analytical', 'story'])
+									type: z.enum(['analytical', 'story'])
 								}))
 							})
 						)
@@ -93,27 +93,13 @@ export function setupGetDocumentRoute() {
 				);
 			}
 
-			// original, visual, audio, analytical, story
+			// original, analytical, story
 			const files = await drizzleDB.batch([
 				drizzleDB.query.fileTable.findFirst({
 					where: and(
 						eq(fileTable.docId, documentId),
 						eq(fileTable.clerkId, clerkId),
 						eq(fileTable.type, 'USER_SUBMITTED')
-					)
-				}),
-				drizzleDB.query.fileTable.findFirst({
-					where: and(
-						eq(fileTable.docId, documentId),
-						eq(fileTable.clerkId, clerkId),
-						eq(fileTable.type, 'AI_GENERATED_VISUAL')
-					)
-				}),
-				drizzleDB.query.fileTable.findFirst({
-					where: and(
-						eq(fileTable.docId, documentId),
-						eq(fileTable.clerkId, clerkId),
-						eq(fileTable.type, 'AI_GENERATED_AUDIO')
 					)
 				}),
 				drizzleDB.query.fileTable.findFirst({
@@ -133,23 +119,13 @@ export function setupGetDocumentRoute() {
 			]);
 
 			function getGeneratedFileArr() {
-				const types = ['visual', 'audio', 'analytical', 'story'] as const;
-				const a: {
-					fileId: string;
-					type: typeof types[number]
-				}[] = [];
-
+				const types = ['analytical', 'story'] as const;
+				const a: { fileId: string; type: typeof types[number] }[] = [];
 				for (let x = 0; x < types.length; x++) {
-					const type = types[x];
 					const res = files[x + 1];
-					if (res) {
-						a.push({
-							fileId: res.id,
-							type: type
-						});
-					}
+					if (res) a.push({ fileId: res.id, type: types[x] });
 				}
-
+				return a;
 			}
 
 			return c.json({

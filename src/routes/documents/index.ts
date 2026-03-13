@@ -3,6 +3,8 @@ import { setupCreateDocumentRoute } from '@/routes/documents/routes/create-docum
 import { setupGetDocumentRoute } from '@/routes/documents/routes/get-document';
 import { setupUpdateDocumentProgressRoute } from '@/routes/documents/routes/update-document-progress';
 import { setupDeleteDocumentRoute } from '@/routes/documents/routes/delete-document';
+import { setupGenerateQuizRoute } from '@/routes/documents/routes/generate-quiz';
+import { setupEvaluateQuizRoute } from '@/routes/documents/routes/evaluate-quiz';
 
 export function setupDocumentRoutes() {
 	setupGetDocumentsRoute();
@@ -10,4 +12,6 @@ export function setupDocumentRoutes() {
 	setupGetDocumentRoute();
 	setupUpdateDocumentProgressRoute();
 	setupDeleteDocumentRoute();
+	setupGenerateQuizRoute();
+	setupEvaluateQuizRoute();
 }

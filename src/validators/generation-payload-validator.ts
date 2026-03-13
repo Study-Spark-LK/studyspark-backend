@@ -7,8 +7,6 @@ const _varsSchema = z.object({
 	category: z.string(),
 	generatedFiles: z.array(z.object({
 		type: z.enum([
-			'AI_GENERATED_VISUAL',
-			'AI_GENERATED_AUDIO',
 			'AI_GENERATED_ANALYTICAL',
 			'AI_GENERATED_STORY'
 		]),

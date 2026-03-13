@@ -1,5 +1,8 @@
 import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { onProfileAnalysis } from '@/consumers/on-profile-analysis';
+import { onDocumentGeneration } from '@/consumers/on-document-generation';
+import { eq } from 'drizzle-orm';
 
 /*
  THIS IS FOR DEV-ONLY ROUTES.
@@ -95,6 +98,47 @@ export function setupDevOnlyRoute(
               `
 		})
 	);
+	// ── DEV QUEUE TRIGGERS ────────────────────────────────────────────────────
+
+	// Simulates the PROFILE_ANALYSIS queue consumer firing for a given profile
+	app.post('/dev/trigger/profile-analysis', async (c) => {
+		const { profileId } = await c.req.json<{ profileId: string }>();
+		if (!profileId) return c.json({ error: 'profileId required' }, 400);
+
+		const profile = await c.env.drizzleDB.query.profileTable.findFirst({
+			where: eq(c.env.dbTables.profileTable.id, profileId)
+		});
+		if (!profile) return c.json({ error: 'profile not found' }, 404);
+
+		await onProfileAnalysis(c.env, {
+			payload: { id: profile.id, name: profile.name, qna: profile.qna as any }
+		});
+
+		return c.json({ ok: true, profileId });
+	});
+
+	// Simulates the DOCUMENT_GENERATION queue consumer firing for a given document
+	app.post('/dev/trigger/document-generation', async (c) => {
+		const { documentId } = await c.req.json<{ documentId: string }>();
+		if (!documentId) return c.json({ error: 'documentId required' }, 400);
+
+		const doc = await c.env.drizzleDB.query.docTable.findFirst({
+			where: eq(c.env.dbTables.docTable.id, documentId)
+		});
+		if (!doc) return c.json({ error: 'document not found' }, 404);
+
+		const originalFile = await c.env.drizzleDB.query.fileTable.findFirst({
+			where: eq(c.env.dbTables.fileTable.docId, documentId)
+		});
+		if (!originalFile) return c.json({ error: 'original file not found' }, 404);
+
+		await onDocumentGeneration(c.env, {
+			payload: { id: doc.id, originalFileKey: originalFile.id, profileData: { id: '', name: '', qna: [] } }
+		});
+
+		return c.json({ ok: true, documentId });
+	});
+
 	app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
         type: 'http',
         scheme: 'bearer',
