@@ -22,11 +22,12 @@ export function setupCreateProfileRoute() {
 		middleware: [clerkValidate, clerkEnforced],
 		request: {
 			body: {
-				description: 'name info',
+				description: 'profile info',
 				content: {
 					'application/json': {
 						schema: z.object({
 							name: z.string(),
+							hobbies: z.array(z.string()).default([]),
 							qna: z.array(z.object({
 								question: z.string(),
 								answer: z.string()
@@ -62,17 +63,18 @@ export function setupCreateProfileRoute() {
 
 		try {
 			const profileId = crypto.randomUUID();
-			const { name, qna } = c.req.valid('json');
+			const { name, hobbies, qna } = c.req.valid('json');
 			const clerkId = c.get('clerkUserId');
 
 			const insertRes = await drizzleDB
 				.insert(dbTables.profileTable)
 				.values({
 					id: profileId,
-					clerkId: clerkId,
-					name: name,
+					clerkId,
+					name,
+					hobbies,
 					status: 'PENDING',
-					qna: qna
+					qna
 				})
 				.returning();
 
@@ -80,8 +82,8 @@ export function setupCreateProfileRoute() {
 				type: QueuePayloadType.PROFILE_ANALYSIS,
 				payload: {
 					id: profileId,
-					name: name,
-					qna: qna
+					name,
+					qna
 				}
 			});
 
@@ -89,7 +91,7 @@ export function setupCreateProfileRoute() {
 				{
 					data: {
 						id: profileId,
-						name: name,
+						name,
 						status: insertRes[0].status
 					}
 				},
@@ -97,13 +99,7 @@ export function setupCreateProfileRoute() {
 			);
 		} catch (e: any) {
 			log.withError(e).error(e.message || 'unknown error');
-
-			return c.json(
-				{
-					message: 'unknown server error'
-				},
-				status.InternalServerError
-			);
+			return c.json({ message: 'unknown server error' }, status.InternalServerError);
 		}
 	});
 }

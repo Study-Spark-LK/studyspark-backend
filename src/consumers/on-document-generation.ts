@@ -11,11 +11,21 @@ interface AgentProcessResponse {
 	difficulty: string;
 	story_mode_explanation: string;
 	concept_map: Record<string, unknown>;
+	flashcards?: Array<{ question: string; answer: string; hint?: string }>;
 }
+
+const MIME_TO_EXT: Record<string, string> = {
+	'application/pdf': 'pdf',
+	'image/jpeg': 'jpg',
+	'image/png': 'png',
+	'image/gif': 'gif',
+	'image/webp': 'webp',
+	'text/plain': 'txt'
+};
 
 export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocumentGenerationIngestPayload) {
 	const { AGENT_URL, INTERNAL_API_KEY, QUEUE_UPSTREAM_OUTPUT, drizzleDB, dbTables, R2_FILES } = env;
-	const { id: documentId, originalFileKey } = payload.payload;
+	const { id: documentId, originalFileKey, profileData } = payload.payload;
 
 	// Look up document and file for clerkId and mimeType
 	const [doc, file] = await Promise.all([
@@ -25,9 +35,10 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 	if (!doc) throw new Error(`Document not found: ${documentId}`);
 	if (!file) throw new Error(`File record not found: ${originalFileKey}`);
 
-	// Read original file from R2
-	const r2Object = await R2_FILES.get(`uploads/${originalFileKey}`);
-	if (!r2Object) throw new Error(`R2 object not found: uploads/${originalFileKey}`);
+	// Read original file from R2 (key includes extension since upload route appends it)
+	const ext = MIME_TO_EXT[file.mimeType] ?? 'bin';
+	const r2Object = await R2_FILES.get(`uploads/${originalFileKey}.${ext}`);
+	if (!r2Object) throw new Error(`R2 object not found: uploads/${originalFileKey}.${ext}`);
 	const arrayBuffer = await r2Object.arrayBuffer();
 	const mimeType = file.mimeType;
 
@@ -49,7 +60,21 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 			'Content-Type': 'application/json',
 			'X-Internal-Key': INTERNAL_API_KEY
 		},
-		body: JSON.stringify({ userId: doc.clerkId, material })
+		body: JSON.stringify({
+			userId: doc.clerkId,
+			material,
+			profileData: {
+				user_id: profileData.clerkId,
+				visual_score: profileData.visualScore,
+				auditory_score: profileData.auditoryScore,
+				reading_score: profileData.readingScore,
+				kinesthetic_score: profileData.kinestheticScore,
+				hobbies: profileData.hobbies,
+				education_level: null,
+				learning_goal: null,
+				preferred_difficulty: 'intermediate'
+			}
+		})
 	});
 
 	if (!res.ok) {
@@ -87,6 +112,7 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 		generatedFiles: [
 			{ type: 'AI_GENERATED_ANALYTICAL', fileKey: analyticalKey, mimeType: 'application/json' },
 			{ type: 'AI_GENERATED_STORY',      fileKey: storyKey,      mimeType: 'application/json' }
-		]
+		],
+		flashcards: result.flashcards ?? []
 	});
 }

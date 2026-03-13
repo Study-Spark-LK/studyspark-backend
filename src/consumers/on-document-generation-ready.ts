@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 
 export async function onDocumentGenerationReady(env: AppEnv, payload: ValidatedGenerationPayload) {
 	const { drizzleDB, dbTables } = env;
-	const { docTable } = dbTables;
+	const { docTable, fileTable, flashcardTable } = dbTables;
 
 	const doc = await drizzleDB.query.docTable.findFirst({
 		where: eq(docTable.id, payload.id)
@@ -30,9 +30,10 @@ export async function onDocumentGenerationReady(env: AppEnv, payload: ValidatedG
 		status: 'READY'
 	}).where(eq(docTable.id, payload.id));
 
+	// Insert file records
 	await drizzleDB.batch([
 		drizzleDB
-			.insert(dbTables.fileTable)
+			.insert(fileTable)
 			.values({
 				id: analyticalFile.fileKey,
 				clerkId: doc.clerkId,
@@ -41,7 +42,7 @@ export async function onDocumentGenerationReady(env: AppEnv, payload: ValidatedG
 				mimeType: analyticalFile.mimeType
 			}),
 		drizzleDB
-			.insert(dbTables.fileTable)
+			.insert(fileTable)
 			.values({
 				id: storyFile.fileKey,
 				clerkId: doc.clerkId,
@@ -50,4 +51,20 @@ export async function onDocumentGenerationReady(env: AppEnv, payload: ValidatedG
 				mimeType: storyFile.mimeType
 			})
 	]);
+
+	// Insert flashcards if agent returned any
+	if (payload.flashcards?.length) {
+		await drizzleDB.insert(flashcardTable).values(
+			payload.flashcards.map((fc) => ({
+				id: crypto.randomUUID(),
+				documentId: doc.id,
+				clerkId: doc.clerkId,
+				question: fc.question,
+				answer: fc.answer,
+				hint: fc.hint ?? null,
+				createdAt: new Date(Date.now()),
+				updatedAt: new Date(Date.now())
+			}))
+		);
+	}
 }

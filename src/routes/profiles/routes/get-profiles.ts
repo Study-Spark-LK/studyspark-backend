@@ -3,14 +3,12 @@ import { createRoute } from '@hono/zod-openapi';
 import { OpenAPITags } from '@/constants';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 import { z } from 'zod';
-import {
-	_400Describe,
-	_401Describe,
-	_500Describe,
-	response2xxSchemaWrapper
-} from '@/openapi';
+import { _400Describe, _401Describe, _500Describe, response2xxSchemaWrapper } from '@/openapi';
 import { status } from '@poppanator/http-constants';
 import { and, desc, eq } from 'drizzle-orm';
+
+const toISO = (ts: Date | number | null | undefined): string =>
+	new Date(ts as any).toISOString();
 
 export function setupGetProfilesRoute() {
 	const app = getHonoInstance();
@@ -27,11 +25,7 @@ export function setupGetProfilesRoute() {
 					status: z.enum(['all', 'pending', 'ready']).default('all').optional()
 				})
 				.openapi({
-					param: {
-						name: 'status',
-						in: 'query',
-						required: false
-					},
+					param: { name: 'status', in: 'query', required: false },
 					example: 'all'
 				})
 		},
@@ -45,13 +39,14 @@ export function setupGetProfilesRoute() {
 								z.object({
 									id: z.string(),
 									name: z.string(),
+									hobbies: z.array(z.string()),
 									status: z.enum(['PENDING', 'READY']),
 									visualScore: z.number(),
 									auditoryScore: z.number(),
 									readingScore: z.number(),
 									kinestheticScore: z.number(),
-									createdAt: z.number(),
-									updatedAt: z.number()
+									createdAt: z.string(),
+									updatedAt: z.string()
 								})
 							)
 						)
@@ -65,7 +60,7 @@ export function setupGetProfilesRoute() {
 	});
 
 	app.openapi(spec, async (c) => {
-		const { log, drizzleDB, dbTables, R2_FILES } = c.env;
+		const { log, drizzleDB, dbTables } = c.env;
 		const { profileTable } = dbTables;
 
 		try {
@@ -75,9 +70,11 @@ export function setupGetProfilesRoute() {
 			const dbRes = await drizzleDB.query.profileTable.findMany({
 				where: and(
 					eq(profileTable.clerkId, clerkId),
-					status === 'ready' ?
-						eq(profileTable.status, 'READY') : status === 'pending' ?
-							eq(profileTable.status, 'PENDING') : undefined
+					status === 'ready'
+						? eq(profileTable.status, 'READY')
+						: status === 'pending'
+							? eq(profileTable.status, 'PENDING')
+							: undefined
 				),
 				orderBy: desc(profileTable.createdAt)
 			});
@@ -86,24 +83,19 @@ export function setupGetProfilesRoute() {
 				data: dbRes.map((r) => ({
 					id: r.id,
 					name: r.name,
+					hobbies: r.hobbies ?? [],
 					status: r.status,
 					visualScore: r.visualScore,
 					auditoryScore: r.auditoryScore,
 					readingScore: r.readingScore,
 					kinestheticScore: r.kinestheticScore,
-					createdAt: r.createdAt,
-					updatedAt: r.updatedAt
+					createdAt: toISO(r.createdAt),
+					updatedAt: toISO(r.updatedAt)
 				}))
 			});
 		} catch (e: any) {
 			log.withError(e).error(e.message || 'unknown error');
-
-			return c.json(
-				{
-					message: 'unknown server error'
-				},
-				status.InternalServerError
-			);
+			return c.json({ message: 'unknown server error' }, status.InternalServerError);
 		}
 	});
 }

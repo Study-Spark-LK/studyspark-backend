@@ -12,7 +12,12 @@ const _varsSchema = z.object({
 		]),
 		fileKey: z.string(),
 		mimeType: z.string()
-	}))
+	})),
+	flashcards: z.array(z.object({
+		question: z.string(),
+		answer: z.string(),
+		hint: z.string().optional()
+	})).default([])
 });
 
 export type ValidatedGenerationPayload = z.infer<typeof _varsSchema>;
