@@ -15,10 +15,10 @@ export function setupUpdateUserProfileRoute() {
 		const { drizzleDB, dbTables } = c.env;
 
 		const body = await c.req.json() as {
-			visual?: number;
-			auditory?: number;
-			reading?: number;
-			kinesthetic?: number;
+			visualDelta?: number;
+			auditoryDelta?: number;
+			readingDelta?: number;
+			kinestheticDelta?: number;
 		};
 
 		// Find the most recent profile for this user
@@ -31,17 +31,24 @@ export function setupUpdateUserProfileRoute() {
 			return c.json({ error: 'Profile not found' }, status.NotFound);
 		}
 
-		// Apply deltas, clamped to 0–100
-		const clamp = (val: number) => Math.min(100, Math.max(0, val));
-		const updated = await drizzleDB.update(dbTables.profileTable).set({
-			visualScore:      clamp((profile.visualScore      ?? 0) + (body.visual      ?? 0)),
-			auditoryScore:    clamp((profile.auditoryScore    ?? 0) + (body.auditory    ?? 0)),
-			readingScore:     clamp((profile.readingScore     ?? 0) + (body.reading     ?? 0)),
-			kinestheticScore: clamp((profile.kinestheticScore ?? 0) + (body.kinesthetic ?? 0))
-		})
-			.where(eq(dbTables.profileTable.id, profile.id))
-			.returning();
+		// Apply deltas: treat -1 (unset) as 0 before adding delta, clamp result to 0–100
+		const applyDelta = (current: number | null, delta: number) => {
+			const base = (current ?? -1) === -1 ? 0 : (current ?? 0);
+			return Math.min(100, Math.max(0, base + delta));
+		};
 
-		return c.json({ updated: true, profile: updated[0] });
+		const newVisual      = applyDelta(profile.visualScore,      body.visualDelta      ?? 0);
+		const newAuditory    = applyDelta(profile.auditoryScore,    body.auditoryDelta    ?? 0);
+		const newReading     = applyDelta(profile.readingScore,     body.readingDelta     ?? 0);
+		const newKinesthetic = applyDelta(profile.kinestheticScore, body.kinestheticDelta ?? 0);
+
+		await drizzleDB.update(dbTables.profileTable).set({
+			visualScore:      newVisual,
+			auditoryScore:    newAuditory,
+			readingScore:     newReading,
+			kinestheticScore: newKinesthetic
+		}).where(eq(dbTables.profileTable.id, profile.id));
+
+		return c.json({ success: true });
 	});
 }

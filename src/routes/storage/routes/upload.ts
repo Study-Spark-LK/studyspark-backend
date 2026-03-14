@@ -100,8 +100,18 @@ export function setupUploadFileRoute() {
                 'Valid Content Byte Length...'
             );
 
+            const MIME_TO_EXT: Record<string, string> = {
+                'application/pdf': 'pdf',
+                'image/jpeg': 'jpg',
+                'image/png': 'png',
+                'image/gif': 'gif',
+                'image/webp': 'webp',
+                'text/plain': 'txt'
+            };
+            const ext = MIME_TO_EXT[contentType] ?? 'bin';
+
             log.info('Starting File Upload...');
-            await c.env.R2_FILES.put(`uploads/${id}`, content, {
+            await c.env.R2_FILES.put(`uploads/${id}.${ext}`, content, {
                 httpMetadata: {
                     contentType: contentType
                 }

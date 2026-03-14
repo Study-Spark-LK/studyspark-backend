@@ -148,8 +148,14 @@ export function setupCreateDocumentRoute() {
 					originalFileKey: fileId,
 					profileData: {
 						id: existingProfile.id,
+						clerkId: existingProfile.clerkId,
 						name: existingProfile.name,
-						qna: existingProfile.qna
+						hobbies: existingProfile.hobbies ?? [],
+						qna: existingProfile.qna,
+						visualScore: existingProfile.visualScore ?? -1,
+						auditoryScore: existingProfile.auditoryScore ?? -1,
+						readingScore: existingProfile.readingScore ?? -1,
+						kinestheticScore: existingProfile.kinestheticScore ?? -1
 					}
 				}
 			});

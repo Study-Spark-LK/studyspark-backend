@@ -5,6 +5,8 @@ import { setupUpdateDocumentProgressRoute } from '@/routes/documents/routes/upda
 import { setupDeleteDocumentRoute } from '@/routes/documents/routes/delete-document';
 import { setupGenerateQuizRoute } from '@/routes/documents/routes/generate-quiz';
 import { setupEvaluateQuizRoute } from '@/routes/documents/routes/evaluate-quiz';
+import { setupGetFlashcardsRoute } from '@/routes/documents/routes/get-flashcards';
+import { setupGetQuizAttemptsRoute } from '@/routes/documents/routes/get-quiz-attempts';
 
 export function setupDocumentRoutes() {
 	setupGetDocumentsRoute();
@@ -14,4 +16,6 @@ export function setupDocumentRoutes() {
 	setupDeleteDocumentRoute();
 	setupGenerateQuizRoute();
 	setupEvaluateQuizRoute();
+	setupGetFlashcardsRoute();
+	setupGetQuizAttemptsRoute();
 }

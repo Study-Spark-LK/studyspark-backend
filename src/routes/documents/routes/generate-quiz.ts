@@ -58,7 +58,29 @@ export function setupGenerateQuizRoute() {
 				return c.json({ code: APIErrorCodes.DOCUMENT_NOT_FOUND, message: 'document not found' }, status.NotFound);
 			}
 
-			// Fetch analytical content from R2
+			// Check D1 cache — if questions already exist, return them (no agent call)
+			const cached = await drizzleDB.query.quizQuestionTable.findMany({
+				where: and(
+					eq(dbTables.quizQuestionTable.documentId, documentId),
+					eq(dbTables.quizQuestionTable.clerkId, clerkId)
+				)
+			});
+
+			if (cached.length > 0) {
+				return c.json({
+					questions: cached.map(({ correctAnswer: _ca, ...q }) => ({
+						id: q.id,
+						question: q.question,
+						options: q.options,
+						explanation: q.explanation ?? null,
+						difficulty: q.difficulty,
+						concept: q.concept ?? null,
+						vark_dimension: q.varkDimension ?? null
+					}))
+				});
+			}
+
+			// Cache miss — fetch analytical content from R2 and call agent
 			const analyticalFile = await drizzleDB.query.fileTable.findFirst({
 				where: and(
 					eq(dbTables.fileTable.docId, documentId),
@@ -86,23 +108,50 @@ export function setupGenerateQuizRoute() {
 				throw new Error(`Agent quiz/generate failed: ${res.status}`);
 			}
 
-			const agentResult = await res.json() as { questions?: Array<Record<string, unknown>> };
+			const agentResult = await res.json() as {
+				questions?: Array<{
+					question: string;
+					options: string[];
+					correct_answer: string;
+					explanation?: string;
+					difficulty?: string;
+					concept?: string;
+					vark_dimension?: string;
+				}>
+			};
 
-			// Store full questions (with correct_answer) in R2 for evaluate to use later
-			if (agentResult.questions?.length) {
+			const questions = agentResult.questions ?? [];
+
+			// Save full questions (with correct_answer) to D1 and R2
+			if (questions.length > 0) {
+				await drizzleDB.insert(dbTables.quizQuestionTable).values(
+					questions.map((q) => ({
+						id: crypto.randomUUID(),
+						documentId,
+						clerkId,
+						question: q.question,
+						options: q.options,
+						correctAnswer: q.correct_answer,
+						explanation: q.explanation ?? null,
+						difficulty: q.difficulty ?? difficulty,
+						concept: q.concept ?? null,
+						varkDimension: q.vark_dimension ?? null,
+						createdAt: new Date(Date.now())
+					}))
+				);
+
+				// Also store in R2 so evaluate-quiz can read with correct_answer intact
 				await c.env.R2_FILES.put(
 					`generated/${documentId}/quiz`,
-					JSON.stringify(agentResult.questions),
+					JSON.stringify(questions),
 					{ httpMetadata: { contentType: 'application/json' } }
 				);
 			}
 
 			// Strip correct_answer before returning to Flutter
-			const stripped = {
-				...agentResult,
-				questions: agentResult.questions?.map(({ correct_answer, correctAnswer, ...rest }) => rest)
-			};
-			return c.json(stripped);
+			return c.json({
+				questions: questions.map(({ correct_answer: _ca, ...rest }) => rest)
+			});
 		} catch (e: any) {
 			log.withError(e).error(e.message || 'unknown error');
 			return c.json({ message: 'unknown server error' }, status.InternalServerError);
