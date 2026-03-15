@@ -10,12 +10,12 @@ export function setupClerkWebhooksRoute() {
 		const raw = await c.req.raw.text();
 
 		const isValidated = validateSvixWebhookRequest({
-			svixId: c.req.header('Svix-Id') as string,
-			svixTimestamp: c.req.header('Svix-Timestamp') as string,
-			svixSignature: c.req.header('Svix-Signature') as string,
-			raw: raw,
-			signingSecret: c.env.CLERK_WEBHOOK_SIGNING_KEY
-		});
+            svixId: c.req.header('Svix-Id') as string,
+            svixTimestamp: c.req.header('Svix-Timestamp') as string,
+            svixSignature: c.req.header('Svix-Signature') as string,
+            raw: raw,
+            signingSecret: c.env.CLERK_WEBHOOK_SECRET
+        });
 
 		if (isValidated) {
 			log.debug('request is validated');
