@@ -1,13 +1,15 @@
 import { getHonoInstance } from '@/hono';
 import { status } from '@poppanator/http-constants';
 import { desc, eq } from 'drizzle-orm';
+import { computeLearningStyle } from '@/util/learning-style';
+import { isValidInternalApiKey } from '@/util/internal-api-key';
 
 export function setupGetUserProfileRoute() {
 	const app = getHonoInstance();
 
 	app.get('/internal/users/:userId', async (c) => {
 		const providedKey = c.req.header('x-internal-key');
-		if (!providedKey || providedKey !== c.env.INTERNAL_API_KEY) {
+		if (!isValidInternalApiKey(providedKey, c.env.INTERNAL_API_KEY)) {
 			return c.json({ error: 'Unauthorized' }, status.Unauthorized);
 		}
 
@@ -24,18 +26,12 @@ export function setupGetUserProfileRoute() {
 			return c.json({ error: 'Profile not found' }, status.NotFound);
 		}
 
-		// Derive dominant learning style from VARK scores
-		const scores = {
-			visual: profile.visualScore ?? 0,
-			auditory: profile.auditoryScore ?? 0,
-			reading: profile.readingScore ?? 0,
-			kinesthetic: profile.kinestheticScore ?? 0
-		};
-		const maxScore = Math.max(...Object.values(scores));
-		const learningStyle = maxScore <= 0
-			? null
-			: (Object.entries(scores).find(([, v]) => v === maxScore)?.[0] ?? null) as
-				'visual' | 'auditory' | 'reading' | 'kinesthetic' | null;
+		const learningStyle = computeLearningStyle(
+			profile.visualScore,
+			profile.auditoryScore,
+			profile.readingScore,
+			profile.kinestheticScore
+		);
 
 		return c.json({
 			user_id: userId,
