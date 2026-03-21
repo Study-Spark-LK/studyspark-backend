@@ -106,10 +106,12 @@ export default {
 		const { log } = env;
 
 		for (const message of batch.messages) {
-			const body = message.body as { type: string };
+			const body = message.body as { type: string, payload: any };
 
 			if (body['type'] && body['type'] === QueuePayloadType.PROFILE_ANALYSIS_READY) {
-				const parsed = profileAnalysisPayloadValidatorSchema.safeParse(body);
+				const parsed = profileAnalysisPayloadValidatorSchema.safeParse(
+                    body.payload
+                );
 				if (parsed.success) {
 					try {
 						await onProfileAnalysisReady(env, parsed.data);
@@ -127,7 +129,9 @@ export default {
 					}).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION_READY) {
-				const parsed = generationPayloadValidatorSchema.safeParse(body);
+				const parsed = generationPayloadValidatorSchema.safeParse(
+                    body.payload
+                );
 				if (parsed.success) {
 					try {
 						await onDocumentGenerationReady(env, parsed.data);
@@ -145,7 +149,9 @@ export default {
 					}).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.PROFILE_ANALYSIS) {
-				const parsed = profileAnalysisIngestValidatorSchema.safeParse(body);
+				const parsed = profileAnalysisIngestValidatorSchema.safeParse(
+                    body.payload
+                );
 				if (parsed.success) {
 					try {
 						await onProfileAnalysis(env, parsed.data);
@@ -163,7 +169,10 @@ export default {
 					}).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION) {
-				const parsed = documentGenerationIngestValidatorSchema.safeParse(body);
+				const parsed =
+                    documentGenerationIngestValidatorSchema.safeParse(
+                        body.payload
+                    );
 				if (parsed.success) {
 					try {
 						await onDocumentGeneration(env, parsed.data);
