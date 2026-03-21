@@ -124,7 +124,8 @@ export function setupUploadFileRoute() {
                 id: id,
                 clerkId: c.get('clerkUserId'),
                 mimeType: contentType,
-                fileName: c.req.header('x-file-name') //optional
+                fileName: c.req.header('x-file-name'), //optional
+                type: 'USER_SUBMITTED'
             });
 
             log.debug('DB insert completed');
