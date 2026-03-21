@@ -135,7 +135,7 @@ export const quizQuestionTable = table('quiz_questions', {
     difficulty: t.text('difficulty').notNull().default('medium'),
     concept: t.text('concept'),
     varkDimension: t.text('vark_dimension'),
-    createdAt: t.integer('created_at', { mode: 'timestamp' })
+    createdAt: t.integer('created_at', { mode: 'timestamp_ms' })
         .notNull()
         .default(sql`(unixepoch() * 1000)`)
 });
@@ -164,7 +164,7 @@ export const quizAttemptTable = table('quiz_attempts', {
         .notNull()
         .default([]),
     recommendation: t.text('recommendation'),
-    createdAt: t.integer('created_at', { mode: 'timestamp' })
+    createdAt: t.integer('created_at', { mode: 'timestamp_ms' })
         .notNull()
         .default(sql`(unixepoch() * 1000)`)
 });
