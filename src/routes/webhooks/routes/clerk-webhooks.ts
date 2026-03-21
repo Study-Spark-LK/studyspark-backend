@@ -14,7 +14,7 @@ export function setupClerkWebhooksRoute() {
             svixTimestamp: c.req.header('Svix-Timestamp') as string,
             svixSignature: c.req.header('Svix-Signature') as string,
             raw: raw,
-            signingSecret: c.env.CLERK_WEBHOOK_SECRET
+            signingSecret: c.env.CLERK_WEBHOOK_SIGNING_KEY
         });
 
 		if (isValidated) {
