@@ -8,6 +8,7 @@ import { setupEvaluateQuizRoute } from '@/routes/documents/routes/evaluate-quiz'
 import { setupGetFlashcardsRoute } from '@/routes/documents/routes/get-flashcards';
 import { setupGetDocumentStatusRoute } from '@/routes/documents/routes/status';
 import { setupGetQuizAttemptsRoute } from '@/routes/documents/routes/get-quiz-attempts';
+import { setupGetQuizRoute } from '@/routes/documents/routes/quiz';
 
 export function setupDocumentRoutes() {
 	setupGetDocumentsRoute();
@@ -20,4 +21,5 @@ export function setupDocumentRoutes() {
 	setupGetFlashcardsRoute();
 	setupGetDocumentStatusRoute();
 	setupGetQuizAttemptsRoute();
+	setupGetQuizRoute();
 }
