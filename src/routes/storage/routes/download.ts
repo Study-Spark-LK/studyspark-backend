@@ -56,35 +56,49 @@ export function setupDownloadFileRoute() {
 		}
 	});
 
+	async function handleDownload(c: any, id: string) {
+		const object = await c.env.R2_FILES.get(id);
+		if (!object) {
+			return c.json(
+				{
+					code: APIErrorCodes.FILE_NOT_FOUND,
+					message: 'file not found'
+				},
+				status.NotFound
+			);
+		}
+		const body = await object.arrayBuffer();
+		return new Response(body, {
+			headers: {
+				'Content-Type':
+					object.httpMetadata?.contentType || 'application/octet-stream'
+			},
+			status: status.Ok
+		});
+	}
+
 	app.openapi(spec, async (c) => {
 		try {
 			const id = c.req.param('id');
-
-			const object = await c.env.R2_FILES.get(id);
-			if (!object) {
-				return c.json(
-					{
-						code: APIErrorCodes.FILE_NOT_FOUND,
-						message: 'file not found'
-					},
-					status.NotFound
-				);
-			}
-			const body = await object.arrayBuffer();
-
-			return new Response(body, {
-				headers: {
-					'Content-Type':
-						object.httpMetadata?.contentType ||
-						'application/octet-stream'
-				},
-				status: status.Ok
-			});
+			return await handleDownload(c, id);
 		} catch (e) {
 			c.env.log
 				.withError(e)
 				.error('[storage][download]: ', (e as Error).message);
+			return c.text('Unknown server error', status.InternalServerError);
+		}
+	});
 
+	// Fallback for multi-segment R2 keys (e.g. generated/{documentId}/analytical)
+	// The OpenAPI route above only matches a single path segment.
+	app.get('/storage/files/*', clerkValidate, clerkEnforced, async (c) => {
+		try {
+			const id = c.req.path.slice('/storage/files/'.length);
+			return await handleDownload(c, id);
+		} catch (e) {
+			c.env.log
+				.withError(e)
+				.error('[storage][download]: ', (e as Error).message);
 			return c.text('Unknown server error', status.InternalServerError);
 		}
 	});
