@@ -44,10 +44,12 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 
 	// Build material payload for the agent
 	const material: Record<string, unknown> = {};
+	const toBase64 = (buf: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
 	if (mimeType === 'application/pdf') {
-		material.pdfBase64 = Buffer.from(arrayBuffer).toString('base64');
+		material.pdfBase64 = toBase64(arrayBuffer);
 	} else if (mimeType.startsWith('image/')) {
-		material.imageBase64 = Buffer.from(arrayBuffer).toString('base64');
+		material.imageBase64 = toBase64(arrayBuffer);
 		material.mimeType = mimeType;
 	} else {
 		material.text = new TextDecoder().decode(arrayBuffer);
