@@ -13,6 +13,8 @@ const toISO = (ts: Date | number | null | undefined): string =>
 export function setupGetFlashcardsRoute() {
 	const app = getHonoInstance();
 
+
+
 	const spec = createRoute({
 		method: 'get',
 		path: '/documents/{documentId}/flashcards',
