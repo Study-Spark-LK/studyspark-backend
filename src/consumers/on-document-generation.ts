@@ -105,14 +105,16 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 	// Notify via upstream-output queue
 	await QUEUE_UPSTREAM_OUTPUT.send({
 		type: QueuePayloadType.DOCUMENT_GENERATION_READY,
-		id: documentId,
-		title: result.topic,
-		description: result.personalised_explanation.slice(0, 200),
-		category: 'AI Generated',
-		generatedFiles: [
-			{ type: 'AI_GENERATED_ANALYTICAL', fileKey: analyticalKey, mimeType: 'application/json' },
-			{ type: 'AI_GENERATED_STORY',      fileKey: storyKey,      mimeType: 'application/json' }
-		],
-		flashcards: result.flashcards ?? []
+		payload: {
+			id: documentId,
+			title: result.topic,
+			description: result.personalised_explanation.slice(0, 200),
+			category: 'AI Generated',
+			generatedFiles: [
+				{ type: 'AI_GENERATED_ANALYTICAL', fileKey: analyticalKey, mimeType: 'application/json' },
+				{ type: 'AI_GENERATED_STORY',      fileKey: storyKey,      mimeType: 'application/json' }
+			],
+			flashcards: result.flashcards ?? []
+		}
 	});
 }

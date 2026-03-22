@@ -34,10 +34,12 @@ export async function onProfileAnalysis(env: AppEnv, payload: ValidatedProfileAn
 
 	await QUEUE_UPSTREAM_OUTPUT.send({
 		type: QueuePayloadType.PROFILE_ANALYSIS_READY,
-		id: profileId,
-		visualScore,
-		auditoryScore,
-		readingScore,
-		kinestheticScore
+		payload: {
+			id: profileId,
+			visualScore,
+			auditoryScore,
+			readingScore,
+			kinestheticScore
+		}
 	});
 }

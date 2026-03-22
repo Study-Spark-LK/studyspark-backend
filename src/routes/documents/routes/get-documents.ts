@@ -100,7 +100,7 @@ export function setupGetDocumentsRoute() {
 					profileId: r.profileId,
 					status: r.status,
 					// ---- Info
-					title: r.description,
+					title: r.title,
 					description: r.description,
 					category: r.category,
 					progressPercentage: r.progressPercentage

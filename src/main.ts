@@ -108,92 +108,58 @@ export default {
 		for (const message of batch.messages) {
 			const body = message.body as { type: string, payload: any };
 
+			const meta = { id: message.id, attempts: message.attempts, msgType: body['type'] };
+
 			if (body['type'] && body['type'] === QueuePayloadType.PROFILE_ANALYSIS_READY) {
-				const parsed = profileAnalysisPayloadValidatorSchema.safeParse(
-                    body.payload
-                );
+				const parsed = profileAnalysisPayloadValidatorSchema.safeParse(body.payload);
 				if (parsed.success) {
 					try {
 						await onProfileAnalysisReady(env, parsed.data);
 						message.ack();
 					} catch (error: any) {
-						log.withMetadata({
-							id: message.id,
-							attempts: message.attempts
-						}).error(error);
+						log.withMetadata(meta).error(error);
 					}
 				} else {
-					log.withMetadata({
-						id: message.id,
-						attempts: message.attempts
-					}).error('invalid body');
+					log.withMetadata({ ...meta, zodErrors: parsed.error.issues }).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION_READY) {
-				const parsed = generationPayloadValidatorSchema.safeParse(
-                    body.payload
-                );
+				const parsed = generationPayloadValidatorSchema.safeParse(body.payload);
 				if (parsed.success) {
 					try {
 						await onDocumentGenerationReady(env, parsed.data);
 						message.ack();
 					} catch (error: any) {
-						log.withMetadata({
-							id: message.id,
-							attempts: message.attempts
-						}).error(error);
+						log.withMetadata(meta).error(error);
 					}
 				} else {
-					log.withMetadata({
-						id: message.id,
-						attempts: message.attempts
-					}).error('invalid body');
+					log.withMetadata({ ...meta, zodErrors: parsed.error.issues }).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.PROFILE_ANALYSIS) {
-				const parsed = profileAnalysisIngestValidatorSchema.safeParse(
-                    body.payload
-                );
+				const parsed = profileAnalysisIngestValidatorSchema.safeParse(body);
 				if (parsed.success) {
 					try {
 						await onProfileAnalysis(env, parsed.data);
 						message.ack();
 					} catch (error: any) {
-						log.withMetadata({
-							id: message.id,
-							attempts: message.attempts
-						}).error(error);
+						log.withMetadata(meta).error(error);
 					}
 				} else {
-					log.withMetadata({
-						id: message.id,
-						attempts: message.attempts
-					}).error('invalid body');
+					log.withMetadata({ ...meta, zodErrors: parsed.error.issues }).error('invalid body');
 				}
 			} else if (body['type'] && body['type'] === QueuePayloadType.DOCUMENT_GENERATION) {
-				const parsed =
-                    documentGenerationIngestValidatorSchema.safeParse(
-                        body.payload
-                    );
+				const parsed = documentGenerationIngestValidatorSchema.safeParse(body);
 				if (parsed.success) {
 					try {
 						await onDocumentGeneration(env, parsed.data);
 						message.ack();
 					} catch (error: any) {
-						log.withMetadata({
-							id: message.id,
-							attempts: message.attempts
-						}).error(error);
+						log.withMetadata(meta).error(error);
 					}
 				} else {
-					log.withMetadata({
-						id: message.id,
-						attempts: message.attempts
-					}).error('invalid body');
+					log.withMetadata({ ...meta, zodErrors: parsed.error.issues }).error('invalid body');
 				}
 			} else {
-				log.withMetadata({
-					id: message.id,
-					attempts: message.attempts
-				}).error('unknown message type');
+				log.withMetadata(meta).error('unknown message type');
 			}
 		}
 	}
