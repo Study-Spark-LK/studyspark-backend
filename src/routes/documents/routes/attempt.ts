@@ -61,7 +61,53 @@ export function setupGetQuizAttemptRoute() {
         const { quizAttemptTable } = dbTables;
 
         try {
-            
+            const documentId = c.req.param('documentId');
+            const attemptId = c.req.param('attemptId');
+            const clerkId = c.get('clerkUserId');
+
+            const attempt = await drizzleDB.query.quizAttemptTable.findFirst({
+                where: and(
+                    eq(quizAttemptTable.id, attemptId),
+                    eq(quizAttemptTable.documentId, documentId),
+                    eq(quizAttemptTable.clerkId, clerkId)
+                ),
+                columns: {
+                    id: true,
+                    documentId: true,
+                    score: true,
+                    correctCount: true,
+                    totalQuestions: true,
+                    weakAreas: true,
+                    recommendation: true,
+                    createdAt: true
+                }
+            });
+
+            if (!attempt) {
+                return c.json(
+                    {
+                        code: 'attempt_not_found',
+                        message: 'Quiz attempt not found or unauthorized'
+                    },
+                    status.NotFound
+                );
+            }
+
+            return c.json(
+                {
+                    data: {
+                        id: attempt.id,
+                        documentId: attempt.documentId,
+                        score: attempt.score,
+                        correctCount: attempt.correctCount,
+                        totalQuestions: attempt.totalQuestions,
+                        weakAreas: attempt.weakAreas,
+                        recommendation: attempt.recommendation,
+                        createdAt: Number(attempt.createdAt)
+                    }
+                },
+                status.Ok
+            );
         } catch (e: any) {
             log.withError(e).error(e.message || 'unknown error');
 
