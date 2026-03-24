@@ -4,7 +4,17 @@ import { z } from 'zod';
 import { OpenAPITags, } from '@/constants';
 import { clerkEnforced, clerkValidate } from '@/middleware';
 
-
+// schema for quiz attempt response
+const QuizAttemptSchema = z.object({
+    id: z.string(),
+    documentId: z.string(),
+    score: z.number(),
+    correctCount: z.number(),
+    totalQuestions: z.number(),
+    weakAreas: z.array(z.string()), // Parses the JSON string[] from the DB
+    recommendation: z.string().nullable(),
+    createdAt: z.number() // timestamp
+});
 
 export function setupGetQuizAttemptRoute() {
     const app = getHonoInstance();
