@@ -13,6 +13,16 @@ import { clerkEnforced, clerkValidate } from '@/middleware';
 import { status } from '@poppanator/http-constants';
 import { eq, and } from 'drizzle-orm';
 
+const EvaluateFlashcardBodySchema = z.object({
+    flashcardId: z.string(),
+    userAnswer: z.string().min(1, 'Answer cannot be empty').max(1000)
+});
+
+const EvaluateFlashcardResponseSchema = z.object({
+    isCorrect: z.boolean(),
+    score: z.number(),
+    feedback: z.string()
+});
 
 export function setupEvaluateFlashcardRoute() {
     const app = getHonoInstance();
