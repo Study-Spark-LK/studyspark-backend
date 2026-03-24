@@ -54,5 +54,21 @@ export function setupGetQuizAttemptRoute() {
             [status.NotFound]: _404Describe,
             [status.InternalServerError]: _500Describe
         }
+	});
+
+	app.openapi(spec, async (c) => {
+        const { log, drizzleDB, dbTables } = c.env;
+        const { quizAttemptTable } = dbTables;
+
+        try {
+            
+        } catch (e: any) {
+            log.withError(e).error(e.message || 'unknown error');
+
+            return c.json(
+                { message: 'unknown server error' },
+                status.InternalServerError
+            );
+        }
     });
 }
