@@ -11,6 +11,7 @@ import { setupGetQuizAttemptsRoute } from '@/routes/documents/routes/get-quiz-at
 import { setupGetQuizRoute } from '@/routes/documents/routes/quiz';
 import { setupGetQuizAttemptRoute } from './routes/attempt';
 import { setupEvaluateFlashcardRoute } from './routes/evaluate-flashcard';
+import { setupGetLessonRoute } from './routes/lesson';
 
 export function setupDocumentRoutes() {
 	setupGetDocumentsRoute();
@@ -26,4 +27,5 @@ export function setupDocumentRoutes() {
 	setupGetQuizRoute();
 	setupGetQuizAttemptRoute();
 	setupEvaluateFlashcardRoute();
+	setupGetLessonRoute();
 }
