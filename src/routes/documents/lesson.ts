@@ -53,7 +53,7 @@ export function setupGetLessonRoute() {
 
     app.openapi(spec, async (c) => {
         const { log, drizzleDB, dbTables } = c.env;
-        const { docTable, lessonTable } = dbTables;
+        const { docTable, quizQuestionTable } = dbTables;
 
         try {
             const documentId = c.req.param('documentId');
@@ -77,7 +77,7 @@ export function setupGetLessonRoute() {
                 );
             }
 
-            if (existingDoc.status !== 'ready') {
+            if (existingDoc.status !== 'READY') {
                 return c.json(
                     {
                         code: 'lesson_not_ready',
@@ -87,13 +87,11 @@ export function setupGetLessonRoute() {
                 );
             }
 
-            const lesson = await drizzleDB.query.lessonTable.findFirst({
-                where: eq(lessonTable.documentId, documentId),
+            const lesson = await drizzleDB.query.quizQuestionTable.findFirst({
+                where: eq(quizQuestionTable.documentId, documentId),
                 columns: {
                     id: true,
                     documentId: true,
-                    title: true,
-                    content: true,
                     createdAt: true
                 }
             });
@@ -113,8 +111,6 @@ export function setupGetLessonRoute() {
                     data: {
                         id: lesson.id,
                         documentId: lesson.documentId,
-                        title: lesson.title,
-                        content: lesson.content,
                         createdAt: lesson.createdAt
                             ? Number(lesson.createdAt)
                             : undefined
