@@ -28,8 +28,7 @@
 	"r2_buckets": [
 		{
 			"binding": "R2_FILES",
-			"bucket_name": "assets-bucket",
-			"preview_bucket_name": "dev-assets-bucket"
+			"bucket_name": "assets-bucket"
 		}
 	],
 	"workflows": [

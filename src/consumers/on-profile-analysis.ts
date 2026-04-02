@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 export async function onProfileAnalysis(env: AppEnv, payload: ValidatedProfileAnalysisIngestPayload) {
 	const { AGENT_URL, INTERNAL_API_KEY, QUEUE_UPSTREAM_OUTPUT, drizzleDB, dbTables } = env;
+	const agentUrl = AGENT_URL.replace(/\/$/, '');
 	const { id: profileId, name, qna } = payload.payload;
 
 	// Look up clerkId — needed so agent tools can retrieve the user's profile
@@ -12,7 +13,7 @@ export async function onProfileAnalysis(env: AppEnv, payload: ValidatedProfileAn
 	});
 	if (!profile) throw new Error(`Profile not found: ${profileId}`);
 
-	const res = await fetch(`${AGENT_URL}/internal/profile/analyze`, {
+	const res = await fetch(`${agentUrl}/internal/profile/analyze`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -34,10 +35,12 @@ export async function onProfileAnalysis(env: AppEnv, payload: ValidatedProfileAn
 
 	await QUEUE_UPSTREAM_OUTPUT.send({
 		type: QueuePayloadType.PROFILE_ANALYSIS_READY,
-		id: profileId,
-		visualScore,
-		auditoryScore,
-		readingScore,
-		kinestheticScore
+		payload: {
+			id: profileId,
+			visualScore,
+			auditoryScore,
+			readingScore,
+			kinestheticScore
+		}
 	});
 }

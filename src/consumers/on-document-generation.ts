@@ -25,7 +25,8 @@ const MIME_TO_EXT: Record<string, string> = {
 
 export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocumentGenerationIngestPayload) {
 	const { AGENT_URL, INTERNAL_API_KEY, QUEUE_UPSTREAM_OUTPUT, drizzleDB, dbTables, R2_FILES } = env;
-	const { id: documentId, originalFileKey, profileData } = payload.payload;
+	const agentUrl = AGENT_URL.replace(/\/$/, '');
+	const { id: documentId, originalFileKey } = payload.payload;
 
 	// Look up document and file for clerkId and mimeType
 	const [doc, file] = await Promise.all([
@@ -44,17 +45,26 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 
 	// Build material payload for the agent
 	const material: Record<string, unknown> = {};
+	const toBase64 = (buf: ArrayBuffer) => {
+		const bytes = new Uint8Array(buf);
+		let binary = '';
+		for (let i = 0; i < bytes.length; i += 8192) {
+			binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+		}
+		return btoa(binary);
+	};
+
 	if (mimeType === 'application/pdf') {
-		material.pdfBase64 = Buffer.from(arrayBuffer).toString('base64');
+		material.pdfBase64 = toBase64(arrayBuffer);
 	} else if (mimeType.startsWith('image/')) {
-		material.imageBase64 = Buffer.from(arrayBuffer).toString('base64');
+		material.imageBase64 = toBase64(arrayBuffer);
 		material.mimeType = mimeType;
 	} else {
 		material.text = new TextDecoder().decode(arrayBuffer);
 	}
 
 	// Call agent to process the content
-	const res = await fetch(`${AGENT_URL}/internal/process`, {
+	const res = await fetch(`${agentUrl}/internal/process`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -62,18 +72,7 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 		},
 		body: JSON.stringify({
 			userId: doc.clerkId,
-			material,
-			profileData: {
-				user_id: profileData.clerkId,
-				visual_score: profileData.visualScore,
-				auditory_score: profileData.auditoryScore,
-				reading_score: profileData.readingScore,
-				kinesthetic_score: profileData.kinestheticScore,
-				hobbies: profileData.hobbies,
-				education_level: null,
-				learning_goal: null,
-				preferred_difficulty: 'intermediate'
-			}
+			material
 		})
 	});
 
@@ -105,14 +104,16 @@ export async function onDocumentGeneration(env: AppEnv, payload: ValidatedDocume
 	// Notify via upstream-output queue
 	await QUEUE_UPSTREAM_OUTPUT.send({
 		type: QueuePayloadType.DOCUMENT_GENERATION_READY,
-		id: documentId,
-		title: result.topic,
-		description: result.personalised_explanation.slice(0, 200),
-		category: 'AI Generated',
-		generatedFiles: [
-			{ type: 'AI_GENERATED_ANALYTICAL', fileKey: analyticalKey, mimeType: 'application/json' },
-			{ type: 'AI_GENERATED_STORY',      fileKey: storyKey,      mimeType: 'application/json' }
-		],
-		flashcards: result.flashcards ?? []
+		payload: {
+			id: documentId,
+			title: result.topic,
+			description: result.personalised_explanation.slice(0, 200),
+			category: 'AI Generated',
+			generatedFiles: [
+				{ type: 'AI_GENERATED_ANALYTICAL', fileKey: analyticalKey, mimeType: 'application/json' },
+				{ type: 'AI_GENERATED_STORY',      fileKey: storyKey,      mimeType: 'application/json' }
+			],
+			flashcards: result.flashcards ?? []
+		}
 	});
 }
